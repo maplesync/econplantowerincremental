@@ -1,0 +1,1246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EconPlanTowerTycoon</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Oswald:wght@400;600;700&family=VT323&display=swap');
+:root {
+  --red:#c0392b;--red-dark:#7b241c;--gold:#f39c12;--gold-light:#f1c40f;
+  --cream:#fdf6e3;--ink:#1a1209;--green:#27ae60;--green-light:#2ecc71;
+  --cyan:#1abc9c;--bg:#0d0a06;--panel:#1a120c;--panel2:#251a10;
+  --border:#5a3a1a;--border-bright:#8b5e2a;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--cream);font-family:'Share Tech Mono',monospace;min-height:100vh;overflow-x:hidden;
+  background-image:repeating-linear-gradient(0deg,transparent,transparent 31px,rgba(90,58,26,.08) 31px,rgba(90,58,26,.08) 32px),
+  repeating-linear-gradient(90deg,transparent,transparent 31px,rgba(90,58,26,.05) 31px,rgba(90,58,26,.05) 32px);}
+
+/* ── HEADER ── */
+#header{background:var(--red-dark);border-bottom:4px solid var(--gold);position:sticky;top:0;z-index:100;box-shadow:0 4px 20px rgba(0,0,0,.8);}
+#header-inner{display:flex;align-items:stretch;justify-content:space-between;max-width:1400px;margin:0 auto;}
+#title-block{padding:10px 20px;border-right:2px solid var(--red);}
+#game-title{font-family:'Oswald',sans-serif;font-size:22px;font-weight:700;color:var(--gold-light);letter-spacing:2px;text-transform:uppercase;line-height:1;}
+#game-subtitle{font-family:'VT323',monospace;font-size:14px;color:rgba(253,246,227,.5);letter-spacing:3px;margin-top:2px;}
+#gdp-display{flex:1;display:flex;align-items:center;justify-content:center;flex-direction:column;padding:8px;}
+#gdp-label{font-size:10px;letter-spacing:4px;color:rgba(253,246,227,.5);text-transform:uppercase;}
+#gdp-value{font-family:'VT323',monospace;font-size:42px;color:var(--gold-light);line-height:1;text-shadow:0 0 20px rgba(241,196,15,.4);}
+#gdp-rate{font-size:11px;color:var(--green-light);letter-spacing:1px;}
+#plan-block{display:flex;flex-direction:column;align-items:flex-end;justify-content:center;padding:10px 20px;border-left:2px solid var(--red);gap:4px;}
+#plan-label{font-size:10px;letter-spacing:3px;color:rgba(253,246,227,.4);text-transform:uppercase;}
+#plan-stars{font-family:'VT323',monospace;font-size:22px;color:var(--gold);}
+#prestige-btn{font-family:'Oswald',sans-serif;font-size:11px;font-weight:600;letter-spacing:2px;background:var(--red);border:2px solid var(--gold);color:var(--gold-light);padding:4px 10px;cursor:pointer;text-transform:uppercase;transition:all .15s;}
+#prestige-btn:hover:not(:disabled){background:var(--gold);color:var(--ink);}
+#prestige-btn:disabled{opacity:.3;cursor:not-allowed;}
+#mult-bar{max-width:1400px;margin:0 auto;display:flex;gap:8px;flex-wrap:wrap;padding:6px 16px;background:var(--panel2);border-bottom:1px solid var(--border);font-size:10px;color:rgba(253,246,227,.5);letter-spacing:1px;}
+.mult-badge{padding:2px 8px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.03);}
+.mult-badge span{color:var(--green-light);}
+
+/* ── TABS ── */
+#tabs-wrap{background:var(--panel);}
+#tabs{display:flex;border-bottom:3px solid var(--border);max-width:1400px;margin:0 auto;}
+.tab-btn{font-family:'Oswald',sans-serif;font-size:13px;font-weight:600;letter-spacing:2px;text-transform:uppercase;padding:10px 24px;background:transparent;border:none;border-right:1px solid var(--border);color:rgba(253,246,227,.4);cursor:pointer;transition:all .15s;position:relative;}
+.tab-btn:hover{color:var(--gold);}
+.tab-btn.active{color:var(--gold-light);background:var(--panel2);}
+.tab-btn.active::after{content:'';position:absolute;bottom:-3px;left:0;right:0;height:3px;background:var(--gold);}
+
+/* ── LAYOUT ── */
+#main{max-width:1400px;margin:0 auto;display:flex;min-height:calc(100vh - 160px);}
+
+/* ── SIDEBAR ── */
+#sidebar{width:320px;min-width:320px;border-right:2px solid var(--border);background:var(--panel);display:flex;flex-direction:column;}
+#sidebar-header{padding:12px 16px;border-bottom:2px solid var(--border);background:var(--panel2);}
+#sidebar-title{font-family:'Oswald',sans-serif;font-size:13px;letter-spacing:3px;text-transform:uppercase;color:var(--gold);}
+#sidebar-sub{font-size:10px;color:rgba(253,246,227,.4);margin-top:2px;}
+
+/* kickstart */
+#kickstart-wrap{padding:8px;border-bottom:2px solid var(--border);background:rgba(192,57,43,.08);}
+#kickstart-btn{width:100%;font-family:'Oswald',sans-serif;font-size:13px;font-weight:700;letter-spacing:2px;text-transform:uppercase;background:var(--red-dark);border:2px solid var(--gold);color:var(--gold-light);padding:10px 8px;cursor:pointer;transition:all .15s;display:flex;flex-direction:column;align-items:center;gap:2px;}
+#kickstart-btn:hover{background:var(--red);border-color:var(--gold-light);box-shadow:0 0 12px rgba(241,196,15,.3);}
+#kickstart-btn:active{transform:scale(.98);}
+#kickstart-label{font-size:13px;}
+#kickstart-value{font-family:'VT323',monospace;font-size:16px;color:var(--gold);letter-spacing:1px;}
+
+#generators{flex:1;overflow-y:auto;padding:8px;padding-bottom:36px;display:flex;flex-direction:column;gap:4px;}
+#generators::-webkit-scrollbar{width:6px;}
+#generators::-webkit-scrollbar-track{background:var(--panel);}
+#generators::-webkit-scrollbar-thumb{background:var(--border);}
+
+/* gen card */
+.gen-card{background:var(--panel2);border:2px solid var(--border);padding:10px 12px;cursor:pointer;transition:border-color .1s;position:relative;overflow:hidden;}
+.gen-card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--gen-color,var(--border));}
+.gen-card:hover:not(.locked){border-color:var(--gen-color,var(--border-bright));}
+.gen-card.affordable{border-color:var(--gen-color,var(--green));}
+.gen-card.locked{opacity:.3;cursor:not-allowed;}
+.gen-tier-label{font-size:9px;letter-spacing:3px;color:rgba(253,246,227,.3);padding:6px 4px 2px;text-transform:uppercase;}
+.gen-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;}
+.gen-name-row{display:flex;align-items:center;gap:8px;}
+.gen-icon{font-size:20px;line-height:1;}
+.gen-name{font-family:'Oswald',sans-serif;font-size:13px;font-weight:600;letter-spacing:1px;}
+.gen-tier-tag{font-size:9px;letter-spacing:2px;color:var(--gen-color,rgba(253,246,227,.4));text-transform:uppercase;}
+.gen-owned{font-family:'VT323',monospace;font-size:24px;color:var(--gen-color,var(--gold));min-width:40px;text-align:right;}
+.gen-stats{display:flex;justify-content:space-between;align-items:flex-end;}
+.gen-prod{font-size:10px;color:rgba(253,246,227,.5);}
+.gen-prod span{color:var(--green-light);}
+.gen-cost-col{text-align:right;font-size:11px;color:rgba(253,246,227,.5);}
+.gen-cost-label{font-size:9px;letter-spacing:1px;color:rgba(253,246,227,.3);display:block;}
+.gen-bar{height:2px;background:rgba(255,255,255,.05);margin-top:8px;}
+.gen-bar-fill{height:100%;background:var(--gen-color,var(--gold));opacity:.6;transition:width .3s;}
+#buy-controls{padding:8px;border-bottom:2px solid var(--border);display:flex;gap:4px;background:var(--panel2);}
+.qty-btn{flex:1;font-family:'Oswald',sans-serif;font-size:11px;font-weight:600;letter-spacing:1px;padding:5px 4px;background:var(--panel);border:1px solid var(--border);color:rgba(253,246,227,.5);cursor:pointer;transition:all .1s;text-transform:uppercase;}
+.qty-btn.active,.qty-btn:hover{background:var(--red-dark);border-color:var(--gold);color:var(--gold-light);}
+
+/* ── CONTENT AREA ── */
+#content{flex:1;overflow-y:auto;background:var(--bg);padding-bottom:28px;}
+#content::-webkit-scrollbar{width:6px;}
+#content::-webkit-scrollbar-track{background:var(--bg);}
+#content::-webkit-scrollbar-thumb{background:var(--border);}
+.tab-pane{padding:20px;display:flex;flex-direction:column;gap:16px;}
+.tab-pane.hidden{display:none;}
+
+/* panel */
+.panel{background:var(--panel);border:2px solid var(--border);}
+.panel-hdr{padding:10px 16px;background:var(--panel2);border-bottom:2px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+.panel-title{font-family:'Oswald',sans-serif;font-size:13px;letter-spacing:3px;text-transform:uppercase;color:var(--gold);}
+.panel-sub{font-size:10px;color:rgba(253,246,227,.4);}
+.panel-body{padding:16px;}
+
+/* goods grid */
+#goods-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:8px;}
+.good-card{background:var(--panel2);border:1px solid var(--border);padding:10px;position:relative;overflow:hidden;}
+.good-card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:2px;background:var(--good-color,var(--cyan));}
+.good-name{font-family:'Oswald',sans-serif;font-size:11px;letter-spacing:1px;margin-bottom:4px;}
+.good-rate{font-family:'VT323',monospace;font-size:22px;color:var(--good-color,var(--cyan));}
+.good-owned{font-size:9px;color:rgba(253,246,227,.4);}
+
+/* logistics */
+.logi-row{display:flex;align-items:center;gap:12px;padding:10px 14px;background:var(--panel2);border:1px solid var(--border);cursor:pointer;transition:all .15s;margin-bottom:6px;}
+.logi-row.unlocked{border-color:var(--cyan);}
+.logi-row.locked{opacity:.3;cursor:not-allowed;}
+.logi-row.affordable{border-color:var(--green);}
+.logi-row:not(.locked):not(.unlocked):hover{border-color:var(--border-bright);}
+.logi-icon{font-size:22px;}
+.logi-info{flex:1;}
+.logi-name{font-family:'Oswald',sans-serif;font-size:12px;letter-spacing:1px;}
+.logi-desc{font-size:10px;color:rgba(253,246,227,.4);margin-top:2px;}
+.logi-status{font-family:'VT323',monospace;font-size:18px;text-align:right;}
+.logi-status.act{color:var(--cyan);}
+.logi-status.cost{color:var(--gold);}
+.logi-status.lock{color:rgba(253,246,227,.2);}
+
+/* milestones */
+.ms-row{display:flex;align-items:center;gap:12px;padding:8px 12px;background:var(--panel2);border:1px solid var(--border);opacity:.4;transition:opacity .3s;margin-bottom:6px;}
+.ms-row.achieved{opacity:1;border-color:var(--gold);}
+.ms-icon{font-size:18px;min-width:24px;}
+.ms-name{font-family:'Oswald',sans-serif;font-size:12px;letter-spacing:1px;flex:1;}
+.ms-progress{font-size:10px;color:rgba(253,246,227,.4);}
+.ms-reward{font-size:10px;color:var(--green-light);}
+
+/* tower tab */
+#tower-wrap{display:flex;gap:20px;align-items:flex-start;}
+#tower-visual{width:200px;min-width:200px;border:2px solid var(--border);background:var(--panel);display:flex;flex-direction:column-reverse;}
+.t-floor{border-top:1px solid var(--border);padding:10px 12px;display:flex;align-items:center;gap:8px;transition:background .3s;}
+.t-floor.active{background:rgba(243,156,18,.08);}
+.t-floor.inactive{opacity:.2;}
+.t-floor-icon{font-size:18px;}
+.t-floor-name{font-family:'Oswald',sans-serif;font-size:10px;letter-spacing:1px;text-transform:uppercase;line-height:1.3;flex:1;}
+.t-floor-num{font-family:'VT323',monospace;font-size:16px;color:var(--gold);}
+#depts-list{flex:1;display:flex;flex-direction:column;gap:8px;}
+.dept-card{background:var(--panel);border:2px solid var(--border);padding:14px 16px;cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:16px;}
+.dept-card.built{border-color:var(--gold);}
+.dept-card.available.affordable{border-color:var(--green);}
+.dept-card.locked{opacity:.3;cursor:not-allowed;}
+.dept-card:not(.locked):not(.built):hover{border-color:var(--border-bright);}
+.dept-icon{font-size:28px;}
+.dept-info{flex:1;}
+.dept-name{font-family:'Oswald',sans-serif;font-size:14px;font-weight:600;letter-spacing:1px;}
+.dept-effect{font-size:11px;color:rgba(253,246,227,.5);margin-top:3px;}
+.dept-flavor{font-size:9px;color:rgba(253,246,227,.3);margin-top:5px;font-style:italic;}
+.dept-badge{font-size:9px;letter-spacing:2px;color:var(--green-light);background:rgba(39,174,96,.15);border:1px solid rgba(39,174,96,.3);padding:2px 6px;margin-top:4px;display:inline-block;}
+.dept-cost-col{text-align:right;}
+.dept-cost{font-family:'VT323',monospace;font-size:20px;color:var(--gold);}
+.dept-cost-lbl{font-size:9px;color:rgba(253,246,227,.3);letter-spacing:1px;}
+
+/* tech tree */
+#rp-bar{display:flex;align-items:center;gap:16px;padding:12px 16px;background:var(--panel);border:2px solid var(--border);margin-bottom:16px;}
+#rp-icon{font-size:28px;}
+#rp-amount{font-family:'VT323',monospace;font-size:32px;color:var(--cyan);}
+#rp-lbl{font-size:10px;letter-spacing:3px;color:rgba(253,246,227,.4);text-transform:uppercase;}
+#rp-rate{font-size:11px;color:var(--green-light);}
+#tech-tree{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;}
+.tech-col-hdr{font-family:'Oswald',sans-serif;font-size:11px;letter-spacing:3px;color:rgba(253,246,227,.4);text-transform:uppercase;text-align:center;padding:6px;border-bottom:1px solid var(--border);}
+.tech-node{background:var(--panel);border:2px solid var(--border);padding:10px 12px;cursor:pointer;transition:all .15s;text-align:center;}
+.tech-node.done{border-color:var(--cyan);background:rgba(26,188,156,.05);}
+.tech-node.avail{border-color:rgba(253,246,227,.2);}
+.tech-node.avail.affordable{border-color:var(--green);}
+.tech-node.avail:hover{border-color:var(--gold);}
+.tech-node.locked{opacity:.2;cursor:not-allowed;}
+.tn-icon{font-size:24px;margin-bottom:4px;}
+.tn-name{font-family:'Oswald',sans-serif;font-size:11px;letter-spacing:1px;margin-bottom:4px;}
+.tn-cost{font-size:10px;color:var(--cyan);}
+.tn-cost.done{color:var(--green-light);}
+.tn-effect{font-size:9px;color:rgba(253,246,227,.4);margin-top:3px;line-height:1.4;}
+
+/* planners panel */
+#planners-panel{position:fixed;right:0;top:160px;bottom:28px;width:230px;background:var(--panel);border-left:2px solid var(--border);z-index:50;overflow-y:auto;transform:translateX(100%);transition:transform .3s;}
+#planners-panel.open{transform:translateX(0);}
+#planners-toggle{position:fixed;right:0;top:50%;transform:translateY(-50%);background:var(--red-dark);border:2px solid var(--gold);border-right:none;color:var(--gold);font-family:'VT323',monospace;font-size:16px;writing-mode:vertical-rl;padding:10px 4px;cursor:pointer;z-index:51;letter-spacing:3px;transition:transform .3s;}
+#planners-panel.open + #planners-toggle{transform:translateY(-50%) translateX(-230px);}
+#planners-inner{padding:12px;}
+#planners-title{font-family:'Oswald',sans-serif;font-size:12px;letter-spacing:3px;color:var(--gold);text-transform:uppercase;margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid var(--border);}
+.planner-card{background:var(--panel2);border:1px solid var(--border);padding:10px;margin-bottom:6px;transition:border-color .2s;}
+.planner-card.unlocked{border-color:var(--gold);}
+.planner-card.locked{opacity:.25;}
+.planner-icon{font-size:24px;margin-bottom:4px;}
+.planner-name{font-family:'Oswald',sans-serif;font-size:11px;letter-spacing:1px;color:var(--gold);margin-bottom:3px;}
+.planner-bio{font-size:9px;color:rgba(253,246,227,.4);margin-bottom:3px;line-height:1.4;}
+.planner-bonus{font-size:10px;color:var(--green-light);}
+.planner-req{font-size:9px;color:rgba(253,246,227,.3);margin-top:3px;}
+
+/* stats panel */
+#stats-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px;}
+.stat-card{background:var(--panel2);border:1px solid var(--border);padding:12px;}
+.stat-label{font-size:9px;letter-spacing:3px;color:rgba(253,246,227,.4);text-transform:uppercase;margin-bottom:4px;}
+.stat-value{font-family:'VT323',monospace;font-size:26px;color:var(--gold-light);}
+.stat-sub{font-size:10px;color:rgba(253,246,227,.4);margin-top:2px;}
+
+/* notification */
+#notification{position:fixed;bottom:36px;right:20px;background:var(--panel2);border:2px solid var(--gold);padding:12px 20px;font-family:'Oswald',sans-serif;font-size:13px;letter-spacing:2px;color:var(--gold-light);z-index:999;opacity:0;transform:translateY(10px);transition:all .3s;pointer-events:none;max-width:340px;}
+#notification.show{opacity:1;transform:translateY(0);}
+#notification.type-success{border-color:var(--green);}
+#notification.type-research{border-color:var(--cyan);}
+#notification.type-prestige{border-color:var(--gold-light);color:#fff;}
+#notification.type-milestone{border-color:#e74c3c;}
+#notification.type-warning{border-color:#e67e22;}
+
+/* prestige modal */
+#prestige-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:200;align-items:center;justify-content:center;}
+#prestige-modal.open{display:flex;}
+#prestige-inner{background:var(--panel);border:3px solid var(--gold);padding:36px;max-width:500px;width:90%;text-align:center;}
+#p-title{font-family:'Oswald',sans-serif;font-size:26px;font-weight:700;letter-spacing:4px;color:var(--gold-light);margin-bottom:6px;}
+#p-sub{font-size:12px;color:rgba(253,246,227,.5);letter-spacing:2px;margin-bottom:24px;}
+#p-stars{font-family:'VT323',monospace;font-size:54px;color:var(--gold);margin-bottom:8px;}
+#p-body{font-size:11px;color:rgba(253,246,227,.6);margin-bottom:28px;line-height:1.9;}
+#p-planners-preview{margin-bottom:20px;display:flex;flex-direction:column;gap:6px;}
+.p-planner-row{background:var(--panel2);border:1px solid var(--gold);padding:8px 14px;display:flex;align-items:center;gap:10px;}
+.p-planner-row span{font-family:'Oswald',sans-serif;font-size:12px;letter-spacing:1px;color:var(--gold-light);}
+.p-planner-row small{font-size:10px;color:var(--green-light);}
+#p-confirm{font-family:'Oswald',sans-serif;font-size:14px;font-weight:700;letter-spacing:3px;text-transform:uppercase;background:var(--red);border:2px solid var(--gold);color:var(--gold-light);padding:12px 28px;cursor:pointer;margin-right:12px;transition:all .15s;}
+#p-confirm:hover{background:var(--gold);color:var(--ink);}
+#p-cancel{font-family:'Oswald',sans-serif;font-size:13px;letter-spacing:2px;background:transparent;border:1px solid var(--border);color:rgba(253,246,227,.4);padding:12px 20px;cursor:pointer;transition:all .15s;}
+#p-cancel:hover{border-color:var(--cream);color:var(--cream);}
+
+/* OD / IPC info economy bar */
+#info-economy-bar{max-width:1400px;margin:0 auto;display:flex;gap:0;background:var(--panel);border-bottom:2px solid var(--border);}
+.ie-block{flex:1;padding:8px 16px;border-right:1px solid var(--border);display:flex;flex-direction:column;gap:2px;}
+.ie-block:last-child{border-right:none;}
+.ie-label{font-size:9px;letter-spacing:3px;color:rgba(253,246,227,.35);text-transform:uppercase;}
+.ie-value{font-family:'VT323',monospace;font-size:22px;line-height:1;}
+.ie-rate{font-size:10px;color:rgba(253,246,227,.4);}
+.ie-od .ie-value{color:#e67e22;}
+.ie-ipc .ie-value{color:#3498db;}
+.ie-delta .ie-value{color:var(--green-light);}
+.ie-delta.deficit .ie-value{color:#e74c3c;}
+.ie-delta.surplus .ie-value{color:var(--green-light);}
+.planning-eff-bar{height:4px;background:rgba(255,255,255,.08);margin-top:4px;border-radius:0;}
+.planning-eff-fill{height:100%;transition:width .5s,background .5s;}
+
+/* computing rooms */
+.room-section{margin-bottom:16px;}
+.room-section-hdr{font-family:'Oswald',sans-serif;font-size:11px;letter-spacing:3px;color:var(--gold);text-transform:uppercase;padding:8px 0 6px;border-bottom:1px solid var(--border);margin-bottom:8px;}
+.room-card{background:var(--panel2);border:2px solid var(--border);padding:12px 14px;cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:14px;margin-bottom:6px;position:relative;overflow:hidden;}
+.room-card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:#3498db;}
+.room-card.affordable{border-color:var(--green);}
+.room-card.full{border-color:var(--gold);cursor:default;opacity:.7;}
+.room-card.locked{opacity:.25;cursor:not-allowed;}
+.room-card:not(.locked):not(.full):hover{border-color:#3498db;}
+.room-icon{font-size:26px;}
+.room-info{flex:1;}
+.room-name{font-family:'Oswald',sans-serif;font-size:13px;font-weight:600;letter-spacing:1px;}
+.room-desc{font-size:10px;color:rgba(253,246,227,.4);margin-top:2px;}
+.room-flavor{font-size:9px;color:rgba(253,246,227,.25);font-style:italic;margin-top:3px;}
+.room-ipc{font-size:10px;color:#3498db;margin-top:3px;}
+.room-right{text-align:right;}
+.room-count{font-family:'VT323',monospace;font-size:28px;color:#3498db;line-height:1;}
+.room-cost{font-family:'VT323',monospace;font-size:16px;color:var(--gold);}
+.room-max{font-size:9px;color:rgba(253,246,227,.3);letter-spacing:1px;}
+
+/* planning efficiency gauge (in tech tab) */
+#plan-eff-panel{background:var(--panel);border:2px solid var(--border);margin-bottom:16px;}
+.pep-body{padding:14px 16px;display:flex;gap:20px;align-items:center;flex-wrap:wrap;}
+.pep-gauge{flex:1;min-width:200px;}
+.pep-bar-track{height:10px;background:rgba(255,255,255,.06);border:1px solid var(--border);margin:6px 0;}
+.pep-bar-fill{height:100%;transition:width .5s,background .5s;}
+.pep-label{font-size:9px;letter-spacing:2px;color:rgba(253,246,227,.35);text-transform:uppercase;margin-bottom:2px;}
+.pep-val{font-family:'VT323',monospace;font-size:28px;}
+.pep-note{font-size:10px;color:rgba(253,246,227,.45);line-height:1.7;max-width:340px;}
+
+/* ticker */
+#ticker{position:fixed;bottom:0;left:0;right:0;height:28px;background:var(--red-dark);border-top:2px solid var(--gold);overflow:hidden;display:flex;align-items:center;z-index:90;}
+#ticker-label{font-family:'Oswald',sans-serif;font-size:10px;font-weight:600;letter-spacing:3px;color:var(--gold);padding:0 12px;border-right:1px solid var(--red);white-space:nowrap;text-transform:uppercase;flex-shrink:0;}
+#ticker-track{flex:1;overflow:hidden;position:relative;height:100%;}
+#ticker-content{position:absolute;top:50%;transform:translateY(-50%);white-space:nowrap;font-size:10px;color:rgba(253,246,227,.6);letter-spacing:1px;will-change:transform;}
+
+.hidden{display:none!important;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(4px);}to{opacity:1;transform:none;}}
+.fade-in{animation:fadeIn .3s ease;}
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════ HEADER ══════════════════════ -->
+<div id="header">
+  <div id="header-inner">
+    <div id="title-block">
+      <div id="game-title">EconPlan Tower Tycoon</div>
+      <div id="game-subtitle">★ FIVE-YEAR PLAN IN PROGRESS ★</div>
+    </div>
+    <div id="gdp-display">
+      <div id="gdp-label">Gross Domestic Product</div>
+      <div id="gdp-value">$0</div>
+      <div id="gdp-rate">+$0.00 / sec</div>
+    </div>
+    <div id="plan-block">
+      <div id="plan-label">Planning Stars</div>
+      <div id="plan-stars">★ 0</div>
+      <button id="prestige-btn" disabled onclick="UI.openPrestige()">New Five-Year Plan</button>
+    </div>
+  </div>
+  <div id="mult-bar">
+    <span class="mult-badge">Logistics: <span id="m-logi">×1.00</span></span>
+    <span class="mult-badge">Tower: <span id="m-tower">×1.00</span></span>
+    <span class="mult-badge">Global: <span id="m-global">×1.00</span></span>
+    <span class="mult-badge">Plan.Eff: <span id="m-planeff">×1.00</span></span>
+    <span class="mult-badge">GDP/s: <span id="m-gdps">$0.00</span></span>
+    <span class="mult-badge">Playtime: <span id="m-playtime">0s</span></span>
+  </div>
+  <div id="info-economy-bar">
+    <div class="ie-block ie-od">
+      <div class="ie-label">📊 Organized Data / sec</div>
+      <div class="ie-value" id="ie-od-val">0/s</div>
+      <div class="ie-rate" id="ie-od-rate">total: 0</div>
+    </div>
+    <div class="ie-block ie-ipc">
+      <div class="ie-label">🖥️ Processing Capacity / sec</div>
+      <div class="ie-value" id="ie-ipc-val">0/s</div>
+      <div class="ie-rate" id="ie-ipc-rate">total: 0</div>
+    </div>
+    <div class="ie-block ie-delta" id="ie-delta-block">
+      <div class="ie-label">⚖️ Planning Efficiency</div>
+      <div class="ie-value" id="ie-delta-val">—</div>
+      <div class="ie-rate" id="ie-delta-desc">Build computing rooms in the Tower</div>
+      <div class="planning-eff-bar"><div class="planning-eff-fill" id="ie-eff-fill" style="width:50%;background:var(--gold)"></div></div>
+    </div>
+  </div>
+  </div>
+  <div id="tabs-wrap">
+    <div id="tabs">
+      <button class="tab-btn active" data-tab="overview">📊 Overview</button>
+      <button class="tab-btn" data-tab="tower">🏢 Planning Tower</button>
+      <button class="tab-btn" data-tab="tech">🔬 Research</button>
+      <button class="tab-btn" data-tab="stats">📈 Statistics</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════ MAIN ══════════════════════ -->
+<div id="main">
+
+  <!-- SIDEBAR -->
+  <div id="sidebar">
+    <div id="sidebar-header">
+      <div id="sidebar-title">⚙ Production Bureau</div>
+      <div id="sidebar-sub">Click to invest GDP</div>
+    </div>
+    <div id="kickstart-wrap">
+      <button id="kickstart-btn" onclick="EPTT.kickstart(); UI.updateKickstart()">
+        <span id="kickstart-label">⚒ MOBILISE WORKERS</span>
+        <span id="kickstart-value">5.00 GDP per click</span>
+      </button>
+    </div>
+    <div id="buy-controls">
+      <button class="qty-btn active" data-qty="1">×1</button>
+      <button class="qty-btn" data-qty="10">×10</button>
+      <button class="qty-btn" data-qty="100">×100</button>
+      <button class="qty-btn" data-qty="max">MAX</button>
+    </div>
+    <div id="generators"></div>
+  </div>
+
+  <!-- TAB CONTENT -->
+  <div id="content">
+
+    <!-- OVERVIEW -->
+    <div id="tab-overview" class="tab-pane">
+      <div class="panel">
+        <div class="panel-hdr">
+          <div class="panel-title">🏭 Available Industries</div>
+          <div id="total-rate" class="panel-sub"></div>
+        </div>
+        <div class="panel-body"><div id="goods-grid"></div></div>
+      </div>
+      <div class="panel">
+        <div class="panel-hdr">
+          <div class="panel-title">🚂 Transport &amp; Logistics</div>
+          <div id="logi-mult-display" class="panel-sub"></div>
+        </div>
+        <div class="panel-body"><div id="logistics-list"></div></div>
+      </div>
+      <div class="panel">
+        <div class="panel-hdr">
+          <div class="panel-title">⭐ National Achievements</div>
+        </div>
+        <div class="panel-body"><div id="milestones-list"></div></div>
+      </div>
+    </div>
+
+    <!-- TOWER -->
+    <div id="tab-tower" class="tab-pane hidden">
+      <div id="tower-wrap">
+        <div id="tower-visual"></div>
+        <div id="depts-list"></div>
+      </div>
+      <div class="panel" style="margin-top:16px;">
+        <div class="panel-hdr">
+          <div class="panel-title">🖥️ Computing Infrastructure</div>
+          <div class="panel-sub" id="ipc-total-display">IPC/s: 0</div>
+        </div>
+        <div class="panel-body">
+          <div style="font-size:10px;color:rgba(253,246,227,.4);line-height:1.8;margin-bottom:12px;padding:8px;background:rgba(52,152,219,.05);border:1px solid rgba(52,152,219,.15);">
+            Install computing rooms on tower floors to generate <span style="color:#3498db;">Information Processing Capacity (IPC)</span>.
+            IPC must keep pace with <span style="color:#e67e22;">Organized Data</span> generated by your industries —
+            a surplus means faster planning &amp; research; a deficit throttles your economy.
+            <em style="color:rgba(253,246,227,.3);">This is the Gosplan problem. This is what OGAS was meant to solve.</em>
+          </div>
+          <div id="computing-rooms-list"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TECH -->
+    <div id="tab-tech" class="tab-pane hidden">
+      <div id="plan-eff-panel">
+        <div class="panel-hdr">
+          <div class="panel-title">⚖️ Planning Efficiency</div>
+          <div class="panel-sub">IPC ÷ Organized Data</div>
+        </div>
+        <div class="pep-body">
+          <div class="pep-gauge">
+            <div class="pep-label">Efficiency Ratio (IPC/s ÷ OD/s)</div>
+            <div class="pep-val" id="pep-ratio">—</div>
+            <div class="pep-bar-track"><div class="pep-bar-fill" id="pep-bar" style="width:50%;background:var(--gold)"></div></div>
+            <div style="display:flex;justify-content:space-between;font-size:9px;color:rgba(253,246,227,.25);letter-spacing:1px;">
+              <span>GOSPLAN CHAOS</span><span>BALANCED</span><span>OGAS OPTIMAL</span>
+            </div>
+          </div>
+          <div class="pep-note" id="pep-note">
+            OD/s: <span id="pep-od-rate" style="color:#e67e22">0</span> &nbsp;|&nbsp;
+            IPC/s: <span id="pep-ipc-rate" style="color:#3498db">0</span><br>
+            GDP multiplier: <span id="pep-gdp-mult" style="color:var(--gold)">×1.00</span><br>
+            RP speed multiplier: <span id="pep-rp-mult" style="color:var(--cyan)">×1.00</span><br>
+            <span style="color:rgba(253,246,227,.3);">IPC/s must keep pace with OD/s. Build computing rooms in the Tower tab.<br>Every new generator increases OD/s — rooms must grow to match.</span>
+          </div>
+        </div>
+      </div>
+      <div id="rp-bar">
+        <div id="rp-icon">🔬</div>
+        <div>
+          <div id="rp-lbl">Research Points</div>
+          <div id="rp-amount">0 RP</div>
+          <div id="rp-rate">+0.00 RP/s</div>
+        </div>
+        <div style="margin-left:auto;text-align:right;font-size:10px;color:rgba(253,246,227,.4);max-width:200px;line-height:1.8;">
+          Generated by Science Academy<br>&amp; Finance Dept upgrades<br>
+          <span style="color:rgba(52,152,219,.6);">Scaled by Planning Efficiency</span>
+        </div>
+      </div>
+      <div id="tech-tree"></div>
+    </div>
+
+    <!-- STATS -->
+    <div id="tab-stats" class="tab-pane hidden">
+      <div class="panel">
+        <div class="panel-hdr"><div class="panel-title">📈 Economic Report</div></div>
+        <div class="panel-body"><div id="stats-grid"></div></div>
+      </div>
+      <div class="panel" style="margin-top:0;">
+        <div class="panel-hdr"><div class="panel-title">💾 Save Management</div></div>
+        <div class="panel-body" id="save-controls"></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- PLANNERS -->
+<div id="planners-panel">
+  <div id="planners-inner">
+    <div id="planners-title">📋 Planning Committee</div>
+    <div id="planners-list"></div>
+  </div>
+</div>
+<button id="planners-toggle" onclick="UI.togglePlanners()">PLANNERS</button>
+
+<!-- NOTIFICATION -->
+<div id="notification"></div>
+
+<!-- PRESTIGE MODAL -->
+<div id="prestige-modal">
+  <div id="prestige-inner">
+    <div id="p-title">★ NEW FIVE-YEAR PLAN ★</div>
+    <div id="p-sub">INITIATE ECONOMIC RESTRUCTURING</div>
+    <div id="p-stars">★ 0</div>
+    <div id="p-body"></div>
+    <div id="p-planners-preview"></div>
+    <button id="p-confirm" onclick="UI.doPrestige()">Confirm Restructuring</button>
+    <button id="p-cancel" onclick="UI.closePrestige()">Continue Current Plan</button>
+  </div>
+</div>
+
+<!-- TICKER -->
+<div id="ticker">
+  <div id="ticker-label">STATE BROADCAST</div>
+  <div id="ticker-track"><div id="ticker-content"></div></div>
+</div>
+
+<!-- ══════════════════════ LOAD BACKEND ══════════════════════ -->
+<script src="game.js"></script>
+
+<!-- ══════════════════════ UI LAYER ══════════════════════ -->
+<script>
+'use strict';
+
+// ── UI module ────────────────────────────────────────────────
+const UI = (() => {
+
+  // Cached DOM refs updated once on init
+  const el = id => document.getElementById(id);
+  let activeTab = 'overview';
+  let plannersOpen = false;
+  let notifTimer = null;
+
+  // Tier colours (mirrors backend tierColor)
+  const TIER_COLORS = {
+    'Resources': '#a0522d',
+    'Goods':     '#27ae60',
+    'Industry':  '#2980b9',
+    'Advanced':  '#1abc9c',
+    'Cybernetics':'#f39c12',
+  };
+
+  // ── Notification ──────────────────────────────────────────
+  function notify({ msg, type = 'info' }) {
+    const n = el('notification');
+    n.textContent = msg;
+    n.className = `show type-${type}`;
+    clearTimeout(notifTimer);
+    notifTimer = setTimeout(() => n.className = '', 3500);
+  }
+
+  // ── Header tick (hot path — DOM ops minimal) ──────────────
+  let _lastGDPStr = '', _lastRateStr = '';
+  function updateHeader() {
+    const q    = EPTT.q;
+    const gdp  = q.getGDP();
+    const gdps = q.getGDPS();
+
+    const gdpStr  = q.fmtGDP(gdp);
+    const rateStr = `+${q.fmtGDP(gdps)}/s`;
+
+    if (gdpStr  !== _lastGDPStr)  { el('gdp-value').textContent = gdpStr;  _lastGDPStr = gdpStr; }
+    if (rateStr !== _lastRateStr) { el('gdp-rate').textContent = rateStr;  _lastRateStr = rateStr; }
+
+    el('plan-stars').textContent = '★ ' + q.getPlanningStars();
+    el('m-logi').textContent    = '×' + q.getLogisticsMult().toFixed(2);
+    el('m-tower').textContent   = '×' + q.getTowerMult().toFixed(2);
+    el('m-global').textContent  = '×' + q.getGlobalMult().toFixed(2);
+    el('m-gdps').textContent    = q.fmtGDP(gdps);
+    el('m-playtime').textContent = q.fmtTime(q.getPlaytime());
+    el('sidebar-sub').textContent = `GDP/s: ${q.fmtGDP(gdps)}`;
+
+    // Planning efficiency
+    const eff = q.getPlanningEff();
+    el('m-planeff').textContent = '×' + eff.gdpMult.toFixed(2);
+
+    // Info-economy bar
+    const od   = q.getOD();
+    const ipc  = q.getIPC();
+    const ods  = q.getODS();
+    const ipcs = q.getIPCS();
+
+    el('ie-od-val').textContent  = q.fmt(ods, 1) + '/s';
+    el('ie-od-rate').textContent = 'total: ' + q.fmt(od, 0);
+    el('ie-ipc-val').textContent  = q.fmt(ipcs, 1) + '/s';
+    el('ie-ipc-rate').textContent = 'total: ' + q.fmt(ipc, 0);
+
+    const ratio    = eff.ratio;
+    const ratioStr = ratio >= 100 ? ratio.toFixed(0) + 'x' : ratio.toFixed(2) + 'x';
+    const deltaBlock = el('ie-delta-block');
+    el('ie-delta-val').textContent = ratioStr + ' ratio';
+
+    let effDesc, effColor, effBarPct;
+    if (ratio >= 2.0) {
+      effDesc = `📈 SURPLUS — GDP ×${eff.gdpMult.toFixed(2)}, RP ×${eff.rpMult.toFixed(2)}`;
+      effColor = '#2ecc71';
+      effBarPct = Math.min(100, 50 + (ratio - 1) * 15);
+      deltaBlock.className = 'ie-block ie-delta surplus';
+    } else if (ratio >= 1.0) {
+      effDesc = `✅ BALANCED — GDP ×${eff.gdpMult.toFixed(2)}, RP ×${eff.rpMult.toFixed(2)}`;
+      effColor = '#f39c12';
+      effBarPct = 45 + ratio * 5;
+      deltaBlock.className = 'ie-block ie-delta surplus';
+    } else if (ratio >= 0.5) {
+      effDesc = `⚠️ STRAIN — GDP ×${eff.gdpMult.toFixed(2)}, RP ×${eff.rpMult.toFixed(2)}`;
+      effColor = '#e67e22';
+      effBarPct = ratio * 50;
+      deltaBlock.className = 'ie-block ie-delta deficit';
+    } else {
+      effDesc = `🔴 GOSPLAN CHAOS — GDP ×${eff.gdpMult.toFixed(2)}, RP ×${eff.rpMult.toFixed(2)}`;
+      effColor = '#e74c3c';
+      effBarPct = Math.max(2, ratio * 30);
+      deltaBlock.className = 'ie-block ie-delta deficit';
+    }
+    el('ie-delta-desc').textContent = effDesc;
+    const fill = el('ie-eff-fill');
+    fill.style.width      = effBarPct + '%';
+    fill.style.background = effColor;
+
+    // Prestige button
+    const pBtn = el('prestige-btn');
+    pBtn.disabled = !EPTT.q.getPrestigePreview().canPrestige;
+
+    // RP display
+    el('rp-amount').textContent = q.fmtRP(q.getRP());
+    el('rp-rate').textContent   = '+' + q.getRPS().toFixed(3) + ' RP/s';
+  }
+
+  // ── Generators sidebar ────────────────────────────────────
+  let _genDom = {}; // cache of gen card DOM refs
+  let _lastGenState = {};
+
+  function buildGenerators() {
+    const container = el('generators');
+    container.innerHTML = '';
+    _genDom = {};
+
+    let lastTier = null;
+    EPTT.q.getGenerators().forEach(gen => {
+      if (gen.tier !== lastTier) {
+        const lbl = document.createElement('div');
+        lbl.className = 'gen-tier-label';
+        lbl.textContent = gen.tier;
+        container.appendChild(lbl);
+        lastTier = gen.tier;
+      }
+
+      const card = document.createElement('div');
+      card.className = 'gen-card' + (gen.unlocked ? '' : ' locked');
+      card.dataset.id = gen.id;
+      card.style.setProperty('--gen-color', gen.tierColor);
+      card.innerHTML = `
+        <div class="gen-top">
+          <div class="gen-name-row">
+            <span class="gen-icon">${gen.icon}</span>
+            <div>
+              <div class="gen-name">${gen.name}</div>
+              <div class="gen-tier-tag">${gen.tier}</div>
+            </div>
+          </div>
+          <div class="gen-owned" data-field="owned">0</div>
+        </div>
+        <div class="gen-stats">
+          <div class="gen-prod"><span data-field="prod">$0</span>/s total</div>
+          <div class="gen-cost-col">
+            <span class="gen-cost-label" data-field="qty-label">Cost ×1</span>
+            <span data-field="cost">–</span>
+          </div>
+        </div>
+        <div class="gen-bar"><div class="gen-bar-fill" data-field="bar" style="width:0%"></div></div>
+      `;
+      card.addEventListener('click', () => {
+        if (!card.classList.contains('locked')) EPTT.buy(gen.id);
+      });
+      container.appendChild(card);
+      _genDom[gen.id] = card;
+    });
+  }
+
+  function updateGenerators() {
+    const gens = EPTT.q.getGenerators();
+    const qty  = EPTT.q.getBuyQty();
+    const gdp  = EPTT.q.getGDP();
+
+    gens.forEach(gen => {
+      const card = _genDom[gen.id];
+      if (!card) return;
+
+      // Affordability classes
+      card.classList.toggle('affordable', gen.affordable);
+      card.classList.toggle('locked', !gen.unlocked);
+
+      // Update fields only when changed
+      const displayQty = qty === 'max' ? gen.maxBuy : qty;
+      const cost = gen.cost;
+      const barPct = gen.unlocked ? Math.min(gdp / Math.max(cost, 0.01) * 100, 100) : 0;
+
+      card.querySelector('[data-field="owned"]').textContent = gen.owned;
+      card.querySelector('[data-field="prod"]').textContent  = EPTT.fmtGDP(gen.prod);
+      card.querySelector('[data-field="qty-label"]').textContent = `Cost ×${displayQty || 0}`;
+      card.querySelector('[data-field="cost"]').textContent  = gen.unlocked ? EPTT.fmtGDP(cost) : '🔒 ' + EPTT.fmtGDP(gen.unlockGDP);
+      card.querySelector('[data-field="bar"]').style.width   = barPct + '%';
+    });
+  }
+
+  // ── Goods grid ────────────────────────────────────────────
+  function renderGoods() {
+    const grid = el('goods-grid');
+    grid.innerHTML = '';
+    let total = 0;
+
+    EPTT.q.getGenerators().forEach(gen => {
+      if (gen.owned === 0 && !gen.unlocked) return;
+      total += gen.prod;
+
+      const card = document.createElement('div');
+      card.className = 'good-card';
+      card.style.setProperty('--good-color', gen.tierColor);
+      card.innerHTML = `
+        <div class="good-name">${gen.icon} ${gen.name}</div>
+        <div class="good-rate">${EPTT.fmtGDP(gen.prod)}/s</div>
+        <div class="good-owned">${gen.owned} active</div>
+      `;
+      grid.appendChild(card);
+    });
+
+    el('total-rate').textContent = `Total raw: ${EPTT.fmtGDP(total)}/s`;
+  }
+
+  // ── Logistics ─────────────────────────────────────────────
+  function renderLogistics() {
+    const list = el('logistics-list');
+    list.innerHTML = '';
+
+    EPTT.q.getLogistics().forEach(l => {
+      const row = document.createElement('div');
+      row.className = 'logi-row'
+        + (l.unlocked   ? ' unlocked'   : '')
+        + (!l.available && !l.unlocked ? ' locked' : '')
+        + (l.affordable ? ' affordable' : '');
+
+      row.innerHTML = `
+        <div class="logi-icon">${l.icon}</div>
+        <div class="logi-info">
+          <div class="logi-name">${l.name}</div>
+          <div class="logi-desc">${l.desc}</div>
+        </div>
+        <div class="logi-status ${l.unlocked ? 'act' : (l.available ? 'cost' : 'lock')}">
+          ${l.unlocked ? '✓ ACTIVE' : (l.always ? 'BASE' : (l.available ? EPTT.fmtGDP(l.cost) : '🔒'))}
+        </div>
+      `;
+
+      if (l.available && !l.unlocked && !l.always) {
+        row.addEventListener('click', () => EPTT.buyLogistics(l.id));
+      }
+      list.appendChild(row);
+    });
+
+    el('logi-mult-display').textContent = `Current: ×${EPTT.q.getLogisticsMult().toFixed(2)}`;
+  }
+
+  // ── Milestones ────────────────────────────────────────────
+  function renderMilestones() {
+    const list = el('milestones-list');
+    list.innerHTML = '';
+
+    EPTT.q.getMilestones().forEach(ms => {
+      const row = document.createElement('div');
+      row.className = 'ms-row' + (ms.achieved ? ' achieved' : '');
+      row.innerHTML = `
+        <div class="ms-icon">${ms.icon}</div>
+        <div>
+          <div class="ms-name">${ms.name}</div>
+          <div class="ms-progress">${ms.desc}</div>
+        </div>
+        <div class="ms-reward">${ms.achieved ? '✓ ' : ''}${ms.reward}</div>
+      `;
+      list.appendChild(row);
+    });
+  }
+
+  // ── Computing Rooms ───────────────────────────────────────
+  function renderComputingRooms() {
+    const list = el('computing-rooms-list');
+    list.innerHTML = '';
+
+    const rooms = EPTT.q.getComputingRooms();
+    const totalIPC = rooms.reduce((s, r) => s + r.ipcTotal, 0);
+    const ipcDisplay = el('ipc-total-display');
+    if (ipcDisplay) ipcDisplay.textContent = `IPC/s: ${EPTT.fmt(EPTT.q.getIPCS(), 1)}`;
+
+    rooms.forEach(r => {
+      const card = document.createElement('div');
+      const locked = !r.unlocked;
+      card.className = 'room-card'
+        + (locked   ? ' locked'     : '')
+        + (r.full   ? ' full'       : '')
+        + (!locked && !r.full && r.affordable ? ' affordable' : '');
+
+      const barPct = r.roomsMax > 0 ? Math.round(r.count / r.roomsMax * 100) : 0;
+
+      card.innerHTML = `
+        <div class="room-icon">${r.icon}</div>
+        <div class="room-info">
+          <div class="room-name">${r.name}</div>
+          <div class="room-desc">${r.desc}</div>
+          <div class="room-flavor">"${r.flavorText}"</div>
+          <div class="room-ipc">+${EPTT.fmt(r.ipcPerRoom, 0)} IPC/s per room
+            ${r.count > 0 ? `· Total: +${EPTT.fmt(r.ipcTotal, 0)} IPC/s` : ''}
+          </div>
+          <div style="height:3px;background:rgba(255,255,255,.05);margin-top:6px;">
+            <div style="height:100%;width:${barPct}%;background:#3498db;opacity:.7;transition:width .3s;"></div>
+          </div>
+        </div>
+        <div class="room-right">
+          <div class="room-count">${r.count}</div>
+          <div class="room-max">/ ${r.roomsMax} max</div>
+          <div class="room-cost">${r.full ? '✓ FULL' : (locked ? '🔒' : EPTT.fmtGDP(r.cost))}</div>
+          <div style="font-size:9px;color:rgba(253,246,227,.3);">${r.full ? '' : 'per room'}</div>
+        </div>
+      `;
+
+      if (!locked && !r.full) {
+        card.addEventListener('click', () => {
+          EPTT.buyRoom(r.id);
+          renderComputingRooms();
+        });
+      }
+      list.appendChild(card);
+    });
+  }
+
+  // ── Tower ─────────────────────────────────────────────────
+  function renderTower() {
+    const visual = el('tower-visual');
+    visual.innerHTML = '';
+
+    EPTT.q.getTowerData().reverse().forEach(d => {
+      const f = document.createElement('div');
+      f.className = 't-floor ' + (d.built ? 'active' : 'inactive');
+      f.innerHTML = `
+        <div class="t-floor-icon">${d.icon}</div>
+        <div class="t-floor-name">${d.name}</div>
+        <div class="t-floor-num">${d.built ? d.floor : ''}</div>
+      `;
+      visual.appendChild(f);
+    });
+
+    const list = el('depts-list');
+    list.innerHTML = '';
+
+    EPTT.q.getDepartments().forEach(d => {
+      const locked = !d.available && !d.built;
+      const card = document.createElement('div');
+      card.className = 'dept-card'
+        + (d.built ? ' built' : '')
+        + (locked ? ' locked' : ' available')
+        + (d.affordable && !d.built ? ' affordable' : '');
+
+      card.innerHTML = `
+        <div class="dept-icon">${d.icon}</div>
+        <div class="dept-info">
+          <div class="dept-name">${d.name} <span style="font-size:10px;opacity:.5;">Floor ${d.floor}</span></div>
+          <div class="dept-effect">${d.effect}</div>
+          <div class="dept-flavor">"${d.flavorText}"</div>
+          ${d.built ? '<div class="dept-badge">OPERATIONAL</div>' : ''}
+        </div>
+        <div class="dept-cost-col">
+          <div class="dept-cost">${d.built ? '✓' : EPTT.fmtGDP(d.cost)}</div>
+          <div class="dept-cost-lbl">${d.built ? 'FLOOR ' + d.floor : 'INVEST'}</div>
+        </div>
+      `;
+
+      if (!d.built && !locked) card.addEventListener('click', () => EPTT.buyDept(d.id));
+      list.appendChild(card);
+    });
+
+    renderComputingRooms();
+  }
+
+  // ── Tech Tree ─────────────────────────────────────────────
+  function renderTechTree() {
+    // Update planning efficiency panel
+    const eff = EPTT.q.getPlanningEff();
+    const ratio = eff.ratio;
+    const ratioStr = ratio >= 10 ? ratio.toFixed(1) + 'x' : ratio.toFixed(2) + 'x';
+    el('pep-ratio').textContent = ratioStr;
+
+    let barPct, barColor;
+    if (ratio >= 2.0) {
+      barPct = Math.min(100, 50 + (ratio - 1) * 15);
+      barColor = '#2ecc71';
+      el('pep-ratio').style.color = '#2ecc71';
+    } else if (ratio >= 1.0) {
+      barPct = 45 + ratio * 5;
+      barColor = '#f39c12';
+      el('pep-ratio').style.color = '#f39c12';
+    } else if (ratio >= 0.5) {
+      barPct = ratio * 50;
+      barColor = '#e67e22';
+      el('pep-ratio').style.color = '#e67e22';
+    } else {
+      barPct = Math.max(2, ratio * 30);
+      barColor = '#e74c3c';
+      el('pep-ratio').style.color = '#e74c3c';
+    }
+    el('pep-bar').style.width      = barPct + '%';
+    el('pep-bar').style.background = barColor;
+    el('pep-gdp-mult').textContent = '×' + eff.gdpMult.toFixed(2);
+    el('pep-rp-mult').textContent  = '×' + eff.rpMult.toFixed(2);
+    const pepOd  = document.getElementById('pep-od-rate');
+    const pepIpc = document.getElementById('pep-ipc-rate');
+    if (pepOd)  pepOd.textContent  = EPTT.q.fmt(EPTT.q.getODS(),  1) + '/s';
+    if (pepIpc) pepIpc.textContent = EPTT.q.fmt(EPTT.q.getIPCS(), 1) + '/s';
+
+    const tree = el('tech-tree');
+    tree.innerHTML = '';
+    const cols = ['Agriculture', 'Industry', 'Transport', 'Cybernetics'];
+    const rows = 5;
+
+    cols.forEach(c => {
+      const h = document.createElement('div');
+      h.className = 'tech-col-hdr';
+      h.textContent = c;
+      tree.appendChild(h);
+    });
+
+    for (let row = 0; row < rows; row++) {
+      for (let col = 0; col < 4; col++) {
+        const tech = EPTT.q.getTechs().find(t => t.col === col && t.row === row);
+        if (!tech) { tree.appendChild(document.createElement('div')); continue; }
+
+        const node = document.createElement('div');
+        node.className = 'tech-node '
+          + (tech.researched ? 'done' : (tech.available ? ('avail' + (tech.affordable ? ' affordable' : '')) : 'locked'));
+
+        node.innerHTML = `
+          <div class="tn-icon">${tech.icon}</div>
+          <div class="tn-name">${tech.name}</div>
+          <div class="tn-cost ${tech.researched ? 'done' : ''}">${tech.researched ? '✓ Done' : tech.cost + ' RP'}</div>
+          <div class="tn-effect">${tech.displayEffect}</div>
+        `;
+
+        if (!tech.researched && tech.available) {
+          node.addEventListener('click', () => EPTT.research(tech.id));
+        }
+        tree.appendChild(node);
+      }
+    }
+  }
+
+  // ── Planners ─────────────────────────────────────────────
+  function renderPlanners() {
+    const list = el('planners-list');
+    list.innerHTML = '';
+    EPTT.q.getPlanners().forEach(p => {
+      const card = document.createElement('div');
+      card.className = 'planner-card ' + (p.unlocked ? 'unlocked' : 'locked');
+      card.innerHTML = `
+        <div class="planner-icon">${p.icon}</div>
+        <div class="planner-name">${p.name}</div>
+        <div class="planner-bio">${p.bio}</div>
+        <div class="planner-bonus">${p.bonus}</div>
+        <div class="planner-req">${p.unlocked ? '✓ Active' : '★ ' + p.starsRequired + ' stars required'}</div>
+      `;
+      list.appendChild(card);
+    });
+  }
+
+  // ── Statistics ────────────────────────────────────────────
+  function renderStats() {
+    const stats = EPTT.q.getStats();
+    const q = EPTT.q;
+    const eff = q.getPlanningEff();
+    const rows = [
+      { label: 'All-Time GDP',         value: q.fmtGDP(q.getTotalGDP()),     sub: 'cumulative' },
+      { label: 'Peak Run GDP',          value: q.fmtGDP(q.getPeakGDP()),      sub: 'this run' },
+      { label: 'Current GDP/s',         value: q.fmtGDP(q.getGDPS()),         sub: 'per second' },
+      { label: 'Organized Data',        value: q.fmt(q.getOD(), 0),           sub: '+' + q.fmt(q.getODS(), 1) + '/s' },
+      { label: 'Info. Processing Cap.', value: q.fmt(q.getIPC(), 0),          sub: '+' + q.fmt(q.getIPCS(), 1) + '/s' },
+      { label: 'Planning Efficiency',   value: eff.ratio.toFixed(2) + 'x',    sub: 'GDP ×' + eff.gdpMult.toFixed(2) + ' · RP ×' + eff.rpMult.toFixed(2) },
+      { label: 'Total Playtime',        value: q.fmtTime(q.getPlaytime()),     sub: '' },
+      { label: 'Planning Stars',        value: '★ ' + q.getPlanningStars(),   sub: 'prestige currency' },
+      { label: 'Five-Year Plans',       value: q.getTotalPrestiges(),          sub: 'completed' },
+      { label: 'GDP Earned',            value: q.fmtGDP(stats.gdpEarned),     sub: 'all time' },
+      { label: 'Generators Bought',     value: stats.generatorsBought,         sub: 'units' },
+      { label: 'Techs Researched',      value: stats.techsResearched,          sub: '/' + EPTT.data.TECHS.length },
+      { label: 'Logistics Tiers',       value: stats.logisticsUnlocked,        sub: '/' + (EPTT.data.LOGISTICS.length - 1) },
+      { label: 'Depts Built',           value: stats.deptsBuilt,               sub: '/' + EPTT.data.DEPARTMENTS.length },
+      { label: 'Research Points',       value: q.fmtRP(q.getRP()),             sub: 'current balance' },
+    ];
+
+    const grid = el('stats-grid');
+    grid.innerHTML = '';
+    rows.forEach(r => {
+      const card = document.createElement('div');
+      card.className = 'stat-card';
+      card.innerHTML = `<div class="stat-label">${r.label}</div><div class="stat-value">${r.value}</div><div class="stat-sub">${r.sub}</div>`;
+      grid.appendChild(card);
+    });
+
+    // Save controls
+    el('save-controls').innerHTML = `
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <button onclick="UI.manualSave()" style="font-family:'Oswald',sans-serif;font-size:11px;letter-spacing:2px;background:var(--panel2);border:1px solid var(--border);color:var(--cream);padding:8px 16px;cursor:pointer;text-transform:uppercase;">💾 Save Now</button>
+        <button onclick="UI.exportSave()" style="font-family:'Oswald',sans-serif;font-size:11px;letter-spacing:2px;background:var(--panel2);border:1px solid var(--border);color:var(--cream);padding:8px 16px;cursor:pointer;text-transform:uppercase;">📤 Export Save</button>
+        <button onclick="UI.importSave()" style="font-family:'Oswald',sans-serif;font-size:11px;letter-spacing:2px;background:var(--panel2);border:1px solid var(--border);color:var(--cream);padding:8px 16px;cursor:pointer;text-transform:uppercase;">📥 Import Save</button>
+        <button onclick="UI.resetConfirm()" style="font-family:'Oswald',sans-serif;font-size:11px;letter-spacing:2px;background:var(--red-dark);border:1px solid var(--red);color:rgba(253,246,227,.6);padding:8px 16px;cursor:pointer;text-transform:uppercase;">🗑 Hard Reset</button>
+      </div>
+    `;
+  }
+
+  // ── Buy Qty Buttons ───────────────────────────────────────
+  function initQtyButtons() {
+    document.querySelectorAll('.qty-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const qty = btn.dataset.qty === 'max' ? 'max' : parseInt(btn.dataset.qty);
+        EPTT.setBuyQty(qty);
+        document.querySelectorAll('.qty-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        updateGenerators();
+      });
+    });
+  }
+
+  // ── Tab Switching ─────────────────────────────────────────
+  function initTabs() {
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        activeTab = btn.dataset.tab;
+        document.querySelectorAll('.tab-pane').forEach(p => p.classList.add('hidden'));
+        document.getElementById('tab-' + activeTab).classList.remove('hidden');
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        renderTab(activeTab);
+      });
+    });
+  }
+
+  function renderTab(tab) {
+    if (tab === 'overview') { renderGoods(); renderLogistics(); renderMilestones(); }
+    if (tab === 'tower')    { renderTower(); }
+    if (tab === 'tech')     { renderTechTree(); }
+    if (tab === 'stats')    { renderStats(); }
+  }
+
+  // ── Prestige Modal ────────────────────────────────────────
+  function openPrestige() {
+    const prev = EPTT.q.getPrestigePreview();
+    if (!prev.canPrestige) return;
+
+    el('p-stars').textContent = '★ ' + prev.stars;
+    el('p-body').innerHTML = `
+      You will receive <strong style="color:var(--gold)">${prev.stars} Planning Star${prev.stars !== 1 ? 's' : ''}</strong>.<br>
+      Total after reset: <strong style="color:var(--gold)">★ ${prev.totalAfter}</strong><br><br>
+      <span style="color:rgba(253,246,227,.5);">
+        GDP, generators, logistics, departments &amp; research reset.<br>
+        Milestones, planners, and playtime are retained.
+      </span>
+    `;
+
+    const pp = el('p-planners-preview');
+    pp.innerHTML = '';
+    if (prev.newPlanners.length > 0) {
+      const hdr = document.createElement('div');
+      hdr.style.cssText = 'font-size:10px;letter-spacing:3px;color:var(--gold);margin-bottom:6px;text-transform:uppercase;';
+      hdr.textContent = 'New Planners Unlocked:';
+      pp.appendChild(hdr);
+      prev.newPlanners.forEach(p => {
+        const row = document.createElement('div');
+        row.className = 'p-planner-row';
+        row.innerHTML = `<span style="font-size:20px;">${p.icon}</span><span>${p.name}</span><small>${p.bonus}</small>`;
+        pp.appendChild(row);
+      });
+    }
+
+    el('prestige-modal').classList.add('open');
+  }
+
+  function closePrestige() {
+    el('prestige-modal').classList.remove('open');
+  }
+
+  function doPrestige() {
+    const result = EPTT.prestige();
+    if (result.ok) {
+      closePrestige();
+      buildGenerators();
+      renderTab(activeTab);
+      renderPlanners();
+    }
+  }
+
+  // ── Planners Toggle ───────────────────────────────────────
+  function togglePlanners() {
+    plannersOpen = !plannersOpen;
+    el('planners-panel').classList.toggle('open', plannersOpen);
+  }
+
+  // ── Save Controls ─────────────────────────────────────────
+  function manualSave() { EPTT.save(); notify({ msg: '💾 Game saved!', type: 'success' }); }
+  function exportSave() {
+    const str = EPTT.exportSave();
+    const ta = document.createElement('textarea');
+    ta.value = str;
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    notify({ msg: '📤 Save copied to clipboard!', type: 'success' });
+  }
+  function importSave() {
+    const str = prompt('Paste save string:');
+    if (str) { EPTT.importSave(str.trim()); buildGenerators(); renderTab(activeTab); }
+  }
+  function resetConfirm() {
+    if (confirm('⚠️ Hard reset? ALL progress will be permanently deleted.')) {
+      EPTT.reset();
+      buildGenerators();
+      renderTab(activeTab);
+      renderPlanners();
+    }
+  }
+
+  // ── Ticker (JS-driven, rebuilds when new messages unlock) ─
+  let _tickerX      = 0;
+  let _tickerW      = 0;    // full scrollable width
+  let _tickerRAF    = null;
+  let _tickerMsgs   = [];   // last known unlocked message list
+
+  function buildTickerDOM(msgs) {
+    const content = el('ticker-content');
+    content.innerHTML = '';
+    // Double the list so we can loop seamlessly
+    const doubled = [...msgs, ...msgs];
+    doubled.forEach(m => {
+      const span = document.createElement('span');
+      span.textContent = '★  ' + m + '     ';
+      span.style.marginRight = '48px';
+      content.appendChild(span);
+    });
+    // Force layout to measure full width
+    requestAnimationFrame(() => {
+      _tickerW = content.scrollWidth / 2; // half = one full pass
+    });
+  }
+
+  function initTicker() {
+    _tickerMsgs = EPTT.q.getTickerMessages();
+    buildTickerDOM(_tickerMsgs);
+    _tickerX = 0;
+
+    // Cancel any previous RAF loop
+    if (_tickerRAF) cancelAnimationFrame(_tickerRAF);
+
+    const SPEED = 60; // pixels per second
+    let last = performance.now();
+
+    function step(now) {
+      const dt = (now - last) / 1000;
+      last = now;
+      _tickerX += SPEED * dt;
+      if (_tickerW > 0 && _tickerX >= _tickerW) {
+        _tickerX -= _tickerW; // seamless loop
+      }
+      el('ticker-content').style.transform = `translateX(-${_tickerX.toFixed(1)}px) translateY(-50%)`;
+      _tickerRAF = requestAnimationFrame(step);
+    }
+    _tickerRAF = requestAnimationFrame(step);
+  }
+
+  function rebuildTickerIfChanged() {
+    const current = EPTT.q.getTickerMessages();
+    // Only rebuild DOM if the message set has actually changed
+    if (current.length !== _tickerMsgs.length ||
+        current.some((m, i) => m !== _tickerMsgs[i])) {
+      _tickerMsgs = current;
+      const savedX = _tickerX;
+      buildTickerDOM(current);
+      // Preserve scroll position proportionally so the ticker doesn't jump
+      requestAnimationFrame(() => {
+        _tickerX = _tickerW > 0 ? savedX % _tickerW : 0;
+      });
+    }
+  }
+
+  // ── Kickstart button label update ─────────────────────────
+  function updateKickstart() {
+    const v = EPTT.q.getKickstartValue();
+    el('kickstart-value').textContent = EPTT.fmt(v) + ' GDP per click';
+  }
+
+  // ── Main render loop ──────────────────────────────────────
+  // Hot path: fires every tick (100ms)
+  function onTick() {
+    updateHeader();
+    updateGenerators();
+  }
+
+  // Slower UI refresh — panels + ticker rebuild check
+  function slowRefresh() {
+    renderTab(activeTab);
+    renderPlanners();
+    rebuildTickerIfChanged();
+    updateKickstart();
+  }
+
+  // ── Init ──────────────────────────────────────────────────
+  function init() {
+    // Boot backend first so state exists before any UI reads it
+    EPTT.init();
+
+    // Wire event bus
+    EPTT.on('tick',            onTick);
+    EPTT.on('notify',          notify);
+    EPTT.on('kickstart',       () => updateKickstart());
+    EPTT.on('gen_bought',      () => { renderTab(activeTab); rebuildTickerIfChanged(); });
+    EPTT.on('logi_unlocked',   () => { renderLogistics(); rebuildTickerIfChanged(); });
+    EPTT.on('dept_built',      () => { renderTower(); rebuildTickerIfChanged(); });
+    EPTT.on('room_bought',     () => { if (activeTab === 'tower') renderComputingRooms(); });
+    EPTT.on('tech_researched', () => { renderTechTree(); rebuildTickerIfChanged(); });
+    EPTT.on('milestone',       () => renderMilestones());
+    EPTT.on('prestige',        () => { buildGenerators(); renderTab(activeTab); renderPlanners(); rebuildTickerIfChanged(); });
+    EPTT.on('planner_unlock',  () => renderPlanners());
+    EPTT.on('load',            () => { buildGenerators(); renderTab(activeTab); rebuildTickerIfChanged(); });
+
+    initTabs();
+    initQtyButtons();
+    buildGenerators();
+    renderTab('overview');
+    renderPlanners();
+    updateKickstart();
+
+    // Ticker starts after a short delay so layout has settled
+    setTimeout(initTicker, 100);
+
+    // Slow refresh: every 2s
+    setInterval(slowRefresh, 2000);
+
+    console.log('%c UI layer ready ', 'background:#27ae60;color:#fff;padding:2px 6px;');
+  }
+
+  return {
+    init,
+    openPrestige, closePrestige, doPrestige,
+    togglePlanners,
+    notify,
+    updateKickstart,
+    manualSave, exportSave, importSave, resetConfirm,
+  };
+})();
+
+// Bootstrap
+document.addEventListener('DOMContentLoaded', () => UI.init());
+</script>
+</body>
+</html>
